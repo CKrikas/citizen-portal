@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { initAuth, login, logout, hasRole, authedFetch } from "./auth";
+import { login, logout, hasRole, authedFetch, API_BASE } from "./auth";
 
 export default function App() {
   const [api, setApi] = useState("checking...");
@@ -10,7 +10,7 @@ export default function App() {
   const isCitizen = hasRole("citizen");
 
   useEffect(() => {
-    fetch("http://localhost:8000/health")
+    fetch(`${API_BASE}/health`)
       .then(r => r.json())
       .then(d => setApi(d.status))
       .catch(() => setApi("offline"));
@@ -19,10 +19,17 @@ export default function App() {
   async function submitApp(e) {
     e.preventDefault();
     if (!isCitizen) { login(); return; }
-    const data = await authedFetch("http://localhost:8000/applications", {
+
+    const payload = {
+      citizen_national_id: nationalId,
+      type,
+      desired_branch: branch,
+    };
+
+    const data = await authedFetch(`${API_BASE}/applications`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ citizen_national_id: nationalId, type, desired_branch: branch }),
+      body: JSON.stringify(payload),
     });
     setId(data.id);
   }
@@ -47,7 +54,12 @@ export default function App() {
 
       {isCitizen && (
         <form onSubmit={submitApp} className="space-y-2 max-w-md">
-          <input className="w-full border p-2 rounded" value={nationalId} onChange={e=>setNationalId(e.target.value)} placeholder="National ID" />
+          <input
+            className="w-full border p-2 rounded"
+            value={nationalId}
+            onChange={e=>setNationalId(e.target.value)}
+            placeholder="National ID"
+          />
           <select className="w-full border p-2 rounded" value={type} onChange={e=>setType(e.target.value)}>
             <option value="deferment">Deferment</option>
             <option value="enlistment">Enlistment</option>

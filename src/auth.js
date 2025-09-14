@@ -1,15 +1,12 @@
 import Keycloak from "keycloak-js";
 
-const KC_URL    = "https://auth-ckrikas.duckdns.org/auth";
+const VM = "20.90.162.52";
+const KC_URL    = `http://${VM}:8080/auth`;
 const KC_REALM  = "stratologia";
 const KC_CLIENT = "citizen-portal";
-export const API_BASE  = "https://api-ckrikas.duckdns.org";
+export const API_BASE = `http://${VM}:8000`;
 
-export const keycloak = new Keycloak({
-  url: KC_URL,
-  realm: KC_REALM,
-  clientId: KC_CLIENT,
-});
+export const keycloak = new Keycloak({ url: KC_URL, realm: KC_REALM, clientId: KC_CLIENT });
 
 export const hasRole = (r) =>
   (keycloak?.tokenParsed?.realm_access?.roles || []).includes(r);
@@ -24,16 +21,15 @@ export async function initAuth() {
     silentCheckSsoFallback: false,
     enableLogging: true,
   });
-
   if (ok && !hasRole(REQUIRED_ROLE)) {
     await keycloak.logout({ redirectUri: window.location.origin + "/?unauthorized=1" });
     throw new Error("Forbidden: missing role 'citizen'");
   }
 }
 
-export const login   = () => keycloak.login();
-export const logout  = () => keycloak.logout();
-export const token   = () => keycloak.token;
+export const login  = () => keycloak.login();
+export const logout = () => keycloak.logout();
+export const token  = () => keycloak.token;
 
 export async function authedFetch(url, opts = {}) {
   const t = token();

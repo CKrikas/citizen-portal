@@ -16,7 +16,7 @@ const REQUIRED_ROLE = "citizen";
 export async function initAuth() {
   const ok = await keycloak.init({
     onLoad: "login-required",
-    pkceMethod: "S256",
+    pkceMethod: "plain",  
     checkLoginIframe: false,
     silentCheckSsoFallback: false,
     enableLogging: true,
